@@ -39,7 +39,7 @@ def start(update: Update, context: CallbackContext) -> None:
     global a, b
     a = update
     b = context
-    print(update)
+    print(update._effective_user.id)
     keyboard = []
     temp = []
     n = 0
@@ -288,12 +288,12 @@ def main():
     updater.start_polling()
     while flag == True:
         current_time = datetime.datetime.now()
-        if current_time.hour == 00:
+        if current_time.hour == 14:
             time.sleep(29880)
             print('hello' * 100)
         try:
             for post in post_list:
-                cont.bot.send_photo(chat_id='@testamazon123', photo=post[0], parse_mode='html', caption=post[1])
+                cont.bot.send_photo(chat_id='@offerte_nerd', photo=post[0], parse_mode='html', caption=post[1])
                 if len(postX) == 10:
                     postX.pop()
                 postX.insert(0, post)
@@ -303,20 +303,21 @@ def main():
                 print('*' * 100)
                 time.sleep(900)
                 post_list.remove(post)
+
             if len(post_list) == 0:
                 try:
                     post = random.choice(extra_posts)
                     print(post)
                     extra_posts.remove(post)
                     print("#" * 100)
-                    cont.bot.send_photo(chat_id='@testamazon123', photo=post[0], parse_mode='html', caption=post[1])
+                    cont.bot.send_photo(chat_id='@offerte_nerd', photo=post[0], parse_mode='html', caption=post[1])
                     if len(postX) == 10:
                         postX.pop()
                     postX.insert(0, post)
                     pickle.dump(postX, open('temp', 'wb'))
                     time.sleep(900)
                 except Exception as e:
-                    cont.bot.send_message(chat_id='-481849876',
+                    cont.bot.send_message(chat_id='229958009, ',
                                           text="List Empty... Searching for deals on Amazon Automatically")
                     extra()
         except:
