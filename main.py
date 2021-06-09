@@ -1,6 +1,7 @@
 from telegram.ext import CommandHandler, MessageHandler, Filters, Updater, InlineQueryHandler, CallbackQueryHandler, CallbackContext, ConversationHandler, conversationhandler
 from telegram import InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardButton, InlineKeyboardMarkup, Update, replymarkup
 from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
 from config import TOKEN, Amazon_login, Amazon_Password, Categories, main_link, keywords, alpha
 import time, random, requests, logging, json, urllib.request
 from PIL import Image, ImageFont, ImageDraw, ImageOps
@@ -23,7 +24,7 @@ headers = {
     }
 
 # Webdriver Configuration
-driver = webdriver.Chrome()
+driver = webdriver.Chrome(ChromeDriverManager().install())
 driver.get(main_link)
 username = driver.find_element_by_id('ap_email')
 username.send_keys(Amazon_login)
@@ -48,6 +49,7 @@ asin_list = []
 final_posts = []
 extra_posts = []
 postX = []
+posts_to_front = 0
 flag = False
 def start(update: Update, context: CallbackContext) -> None:
     # print(update.effective_user.id)
@@ -128,6 +130,8 @@ def button2(update: Update, context: CallbackContext) -> None:
                         image = item["image"]
                     price = item["prices"]["current_price"]
                     old_price = item["prices"]["previous_price"]
+                    if '-' in str(price) or '-' in str(old_price):
+                        continue
                     checkout_discount = item["prices"]["previous_price"]
                     currency = item["prices"]["currency"]
                     link = item["full_link"]
@@ -173,6 +177,8 @@ def search(update, context):
                             image = item["image"]
                         price = item["prices"]["current_price"]
                         old_price = item["prices"]["previous_price"]
+                        if '-' in str(price) or '-' in str(old_price):
+                            continue
                         checkout_discount = item["prices"]["previous_price"]
                         currency = item["prices"]["currency"]
                         link = item["full_link"]
@@ -246,7 +252,7 @@ def url_add(update, context):
     return ConversationHandler.END
 
 def direct(update, context):
-    global cont, upd, flag, final_posts, Id, flag
+    global cont, upd, flag, final_posts, Id, flag, posts_to_front
     Id = update.effective_chat.id
     cont = context
     upd = update
@@ -265,7 +271,7 @@ def direct(update, context):
             # print(asin_list)
             if asin not in asin_list:
                 asin_list.append(asin)
-                title = item["title"]
+                title = item["title"], postX
                 try:
                     image = item["images"][0]
                 except:
@@ -302,19 +308,23 @@ def direct(update, context):
                 context.bot.send_photo(chat_id=update.effective_chat.id, photo= image, parse_mode= 'html', caption= caption )
                 name = ''.join(random.choice(alpha) for _ in range(7)).lower() +'-'+str(int(time.time()))+'.png'
                 copyfile('a.png', f'images/{name}')
-                # TO THE FRONTEND
-                with open("a.png", "rb") as image_file:
-                    IMG64 = base64.b64encode(image_file.read())
-                post_temp = [str(IMG64), captionx, "➡️", link]
-                if len(postX) == 10:
-                    postX.pop()
-                postX.insert(0, post_temp)
-                print('lenght - ' + str(len(postX)))
-                pickle.dump(postX, open('temp', 'wb'))
 
                 cont.bot.send_photo(chat_id='@nadeejachannel', photo= open('a.png', 'rb'), parse_mode= 'html', caption= caption)
                 # print('*'*100)                    
                 context.bot.send_message(chat_id=update.effective_chat.id, text="Posted on the Channel")
+
+                # TO THE FRONTEND
+                with open("a.png", "rb") as image_file:
+                    IMG64 = base64.b64encode(image_file.read())
+                post_temp = [str(IMG64), captionx, "➡️", link]
+                postX = pickle.load(open('temp', 'rb'))
+                if len(postX) == 12:
+                    postX.pop()
+                postX.insert(0, [post_temp, 0])
+                posts_to_front += 1
+                pickle.dump(posts_to_front, open('count', 'wb'))
+                pickle.dump(postX, open('temp', 'wb'))
+
                 flag = True
         except:
             context.bot.send_message(chat_id=update.effective_chat.id, text="Error. Please send again")
@@ -362,7 +372,7 @@ def resume(update: Update, context: CallbackContext):
     flag = True
     
 def main():
-    global postX
+    global postX, posts_to_front
     updater = Updater(TOKEN, use_context=True)
 
     conv_handler = ConversationHandler(
@@ -406,18 +416,21 @@ def main():
                     captionx = cap.replace('\n', 'v123v123s123s123n123n123')
                     name = ''.join(random.choice(alpha) for _ in range(7)).lower() +'-'+str(int(time.time()))+'.png'
                     copyfile('a.png', f'images/{name}')
+                   
+                    cont.bot.send_photo(chat_id='@nadeejachannel', photo= open('a.png', 'rb'), parse_mode= 'html', caption= caption)
+
                     # TO THE FRONTEND
                     with open("a.png", "rb") as image_file:
                         IMG64 = base64.b64encode(image_file.read())
                     post_temp = [str(IMG64), captionx, "➡️", link1]
-                    if len(postX) == 10:
+                    postX = pickle.load(open('temp', 'rb'))
+                    if len(postX) == 12:
                         postX.pop()
-                    postX.insert(0, post_temp)
-                    print('lenght - ' + str(len(postX)))
+                    postX.insert(0, [post_temp, 0])
+                    posts_to_front += 1
+                    pickle.dump(posts_to_front, open('count', 'wb'))
                     pickle.dump(postX, open('temp', 'wb'))
-                    print('x')
-                    cont.bot.send_photo(chat_id='@nadeejachannel', photo= open('a.png', 'rb'), parse_mode= 'html', caption= caption)
-                    print('*'*100)
+
                     final_posts.remove(post)
                     time.sleep(900)
                 if len(final_posts) == 0:
@@ -439,17 +452,21 @@ def main():
                         captionx = cap.replace('\n', 'v123v123s123s123n123n123')
                         name = ''.join(random.choice(alpha) for _ in range(7)).lower() +'-'+str(int(time.time()))+'.png'
                         copyfile('a.png', f'images/{name}')
+ 
+                        cont.bot.send_photo(chat_id='@nadeejachannel', photo= open('a.png', 'rb'), parse_mode= 'html', caption= caption)
+
                         # TO THE FRONTEND
                         with open("a.png", "rb") as image_file:
                             IMG64 = base64.b64encode(image_file.read())
                         post_temp = [str(IMG64), captionx, "➡️", link1]
-                        if len(postX) == 10:
+                        postX = pickle.load(open('temp', 'rb'))
+                        if len(postX) == 12:
                             postX.pop()
-                        postX.insert(0, post_temp)
-                        print('lenght - ' + str(len(postX)))
+                        postX.insert(0, [post_temp, 0])
+                        posts_to_front += 1
+                        pickle.dump(posts_to_front, open('count', 'wb'))
                         pickle.dump(postX, open('temp', 'wb'))
- 
-                        cont.bot.send_photo(chat_id='@nadeejachannel', photo= open('a.png', 'rb'), parse_mode= 'html', caption= caption)
+                        
                         extra_posts.remove(post)
                         time.sleep(900)
                     except Exception as e:
@@ -472,6 +489,8 @@ def main():
                                             image = item["image"]
                                         price = item["prices"]["current_price"]
                                         old_price = item["prices"]["previous_price"]
+                                        if '-' in str(price) or '-' in str(old_price):
+                                            continue
                                         checkout_discount = item["prices"]["previous_price"]
                                         currency = item["prices"]["currency"]
                                         link = item["full_link"]
