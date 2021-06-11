@@ -8,15 +8,7 @@ CORS(app)
 
 @app.route('/deals')
 def deals():
-    arr1 = pickle.load(open('temp', 'rb'))
-    arr2 = arr1
-    for i in arr2:
-        if i[1] == 0:
-            i[1] = 1
-        else:
-            break
-    pickle.dump(arr2, open('temp', 'wb'))
-    return jsonify(arr1)
+    return jsonify(pickle.load(open('temp', 'rb')))
 
 @app.route('/count')
 def count():

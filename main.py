@@ -309,10 +309,6 @@ def direct(update, context):
                 name = ''.join(random.choice(alpha) for _ in range(7)).lower() +'-'+str(int(time.time()))+'.png'
                 copyfile('a.png', f'images/{name}')
 
-                cont.bot.send_photo(chat_id='@nadeejachannel', photo= open('a.png', 'rb'), parse_mode= 'html', caption= caption)
-                # print('*'*100)                    
-                context.bot.send_message(chat_id=update.effective_chat.id, text="Posted on the Channel")
-
                 # TO THE FRONTEND
                 with open("a.png", "rb") as image_file:
                     IMG64 = base64.b64encode(image_file.read())
@@ -320,10 +316,15 @@ def direct(update, context):
                 postX = pickle.load(open('temp', 'rb'))
                 if len(postX) == 12:
                     postX.pop()
-                postX.insert(0, [post_temp, 0])
+                postX.insert(0, post_temp)
                 posts_to_front += 1
                 pickle.dump(posts_to_front, open('count', 'wb'))
+                print('****************************1 ', len(postX))
                 pickle.dump(postX, open('temp', 'wb'))
+
+                cont.bot.send_photo(chat_id='@nadeejachannel', photo= open('a.png', 'rb'), parse_mode= 'html', caption= caption)
+                # print('*'*100)                    
+                context.bot.send_message(chat_id=update.effective_chat.id, text="Posted on the Channel")
 
                 flag = True
         except:
@@ -416,8 +417,6 @@ def main():
                     captionx = cap.replace('\n', 'v123v123s123s123n123n123')
                     name = ''.join(random.choice(alpha) for _ in range(7)).lower() +'-'+str(int(time.time()))+'.png'
                     copyfile('a.png', f'images/{name}')
-                   
-                    cont.bot.send_photo(chat_id='@nadeejachannel', photo= open('a.png', 'rb'), parse_mode= 'html', caption= caption)
 
                     # TO THE FRONTEND
                     with open("a.png", "rb") as image_file:
@@ -426,10 +425,14 @@ def main():
                     postX = pickle.load(open('temp', 'rb'))
                     if len(postX) == 12:
                         postX.pop()
-                    postX.insert(0, [post_temp, 0])
+                    postX.insert(0, post_temp)
                     posts_to_front += 1
+                    print('****************************2 ', len(postX))
                     pickle.dump(posts_to_front, open('count', 'wb'))
                     pickle.dump(postX, open('temp', 'wb'))
+                   
+                    cont.bot.send_photo(chat_id='@nadeejachannel', photo= open('a.png', 'rb'), parse_mode= 'html', caption= caption)
+
 
                     final_posts.remove(post)
                     time.sleep(900)
@@ -452,8 +455,6 @@ def main():
                         captionx = cap.replace('\n', 'v123v123s123s123n123n123')
                         name = ''.join(random.choice(alpha) for _ in range(7)).lower() +'-'+str(int(time.time()))+'.png'
                         copyfile('a.png', f'images/{name}')
- 
-                        cont.bot.send_photo(chat_id='@nadeejachannel', photo= open('a.png', 'rb'), parse_mode= 'html', caption= caption)
 
                         # TO THE FRONTEND
                         with open("a.png", "rb") as image_file:
@@ -462,10 +463,13 @@ def main():
                         postX = pickle.load(open('temp', 'rb'))
                         if len(postX) == 12:
                             postX.pop()
-                        postX.insert(0, [post_temp, 0])
+                        postX.insert(0, post_temp)
                         posts_to_front += 1
+                        print('****************************3 ', len(postX))
                         pickle.dump(posts_to_front, open('count', 'wb'))
                         pickle.dump(postX, open('temp', 'wb'))
+ 
+                        cont.bot.send_photo(chat_id='@nadeejachannel', photo= open('a.png', 'rb'), parse_mode= 'html', caption= caption)
                         
                         extra_posts.remove(post)
                         time.sleep(900)
